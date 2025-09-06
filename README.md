@@ -1,18 +1,32 @@
-# 8Bit Hangman - Backend 🖥️
+# The 8Bits Hangman - Backend 🖥️
 
-API backend for the 8Bit Hangman game, built with Go and Gin.
+API backend for The 8Bits Hangman game, built with Go and Gin framework.
 
-## Goal
-Provide a REST API for the Hangman game logic to be consumed by the frontend.
+## Overview
+
+This backend provides a robust REST API that powers the Hangman game logic, designed to be consumed by the frontend application. It handles game state management, word selection, guess validation, and scoring.
 
 ## Tech Stack
-- Go
-- Gin (HTTP server)
-- In-memory storage for sessions (or optional DB for leaderboard)
-- Unit tests with Go `testing` package
+
+- **Go** - Fast and efficient programming language
+- **Gin** - High-performance HTTP web framework
+- **PostgreSQL** - Optional database for leaderboard and persistent storage
+- **Go Testing** - Comprehensive test suite with the standard Go `testing` package
 
 ## Getting Started
+
+### Prerequisites
+
+- Go 1.16 or higher
+- Git
+
+### Installation
+
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/the-8bits-hangman-back.git
+cd the-8bits-hangman-back
+
 # Initialize Go modules
 go mod tidy
 
@@ -20,40 +34,49 @@ go mod tidy
 go run cmd/server/main.go
 ```
 
-The API will run on `http://localhost:8080` by default.
-
----
+The API will be available at `http://localhost:8080` by default.
 
 ## Project Structure
-- `internal/hangman` → game logic (core of the game)
-- `internal/api` → Gin HTTP handlers
-- `internal/storage` → session management (in-memory or DB)
-- `cmd/server` → main entrypoint for the server
-- `tests` → unit tests for game logic and API endpoints
 
----
+- `cmd/server/` - Main application entry point
+- `internal/hangman/` - Core game logic and business rules
+- `internal/api/` - HTTP handlers and routing with Gin
+- `internal/storage/` - Data persistence layer (in-memory or PostgreSQL)
+- `tests/` - Unit and integration tests
+- `ai-agents/` - AI agent configurations for development assistance
 
-## API Endpoints (examples)
-- `POST /game` → create a new game, returns game ID and initial state
-- `POST /game/:id/guess` → submit a letter guess, returns updated game state
-- `GET /game/:id` → get current state of a game
+## API Endpoints
 
-### Example response
+### Game Management
+
+- `POST /api/games` - Create a new game session
+- `GET /api/games/:id` - Retrieve current game state
+- `POST /api/games/:id/guess` - Submit a letter guess
+- `DELETE /api/games/:id` - Abandon a game
+
+### Leaderboard (Optional)
+
+- `GET /api/leaderboard` - Get top scores
+- `POST /api/leaderboard` - Submit a score
+
+### Example Response
+
 ```json
 {
-  "id": "abc123",
-  "state": "goodGuess",
+  "id": "game_abc123",
+  "status": "in_progress",
   "turnsLeft": 5,
-  "foundLetters": ["H", "_", "N", "G", "M", "A", "N"],
-  "usedLetters": ["H", "A"],
-  "wordLength": 7
+  "word": ["H", "_", "N", "G", "M", "_", "N"],
+  "usedLetters": ["H", "N", "G", "M"],
+  "difficulty": "medium",
+  "score": 120
 }
 ```
 
----
+## Development
 
-## TODO
-- Implement all API endpoints
-- Connect frontend to API
-- Add unit tests for game logic
-- Optionally, add persistent storage for scores
+### Running Tests
+
+```bash
+go test ./tests/... -v
+```
