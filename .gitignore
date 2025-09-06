@@ -1,0 +1,40 @@
+# Ignorer les fichiers binaires et objets
+*.exe
+*.o
+*.so
+
+# Ignorer les fichiers de log
+*.log
+
+# Ignorer les fichiers de configuration utilisateur
+*.env
+
+# Ignorer les dossiers de dépendances
+node_modules/
+vendor/
+
+# Ignorer les fichiers de build
+/build/
+/dist/
+
+# Ignorer les fichiers temporaires
+*.tmp
+*.swp
+
+# Ignorer les fichiers de l'IDE
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Ignorer les fichiers de système
+.DS_Store
+Thumbs.db
+
+#ai-agents
+ai-agents/
+
+# .cursorrules
+.cursorrules
+
+# .env
+.env
