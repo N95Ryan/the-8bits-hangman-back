@@ -31,19 +31,25 @@ cd the-8bits-hangman-back
 go mod tidy
 
 # Run the server
-go run cmd/server/main.go
+go run main.go
 ```
 
 The API will be available at `http://localhost:8080` by default.
 
 ## Project Structure
 
-- `cmd/server/` - Main application entry point
-- `internal/hangman/` - Core game logic and business rules
-- `internal/api/` - HTTP handlers and routing with Gin
-- `internal/storage/` - Data persistence layer (in-memory or PostgreSQL)
-- `tests/` - Unit and integration tests
-- `ai-agents/` - AI agent configurations for development assistance
+- `main.go` - Main application entry point
+- `game/` - Core game logic and word management
+  - `game.go` - Game state and mechanics
+  - `wordlist.go` - Word selection and categorization
+  - `score.go` - Scoring system and leaderboard
+- `handlers/` - HTTP request handlers
+  - `gameHandler.go` - Game-related API endpoints
+  - `userHandler.go` - User authentication and management
+- `models/` - Data structures and business logic
+  - `user.go` - User model and authentication
+- `utils/` - Helper functions and utilities
+  - `helpers.go` - Common utility functions
 
 ## API Endpoints
 
@@ -54,22 +60,34 @@ The API will be available at `http://localhost:8080` by default.
 - `POST /api/games/:id/guess` - Submit a letter guess
 - `DELETE /api/games/:id` - Abandon a game
 
-### Leaderboard (Optional)
+### User Management
+
+- `POST /api/users/register` - Register a new user
+- `POST /api/users/login` - Authenticate a user
+
+### Leaderboard
 
 - `GET /api/leaderboard` - Get top scores
 - `POST /api/leaderboard` - Submit a score
+
+### ID Format
+
+All IDs in the system (games, users, tokens) follow a standardized format:
+
+- 3 digits followed by 3 uppercase letters (e.g., `123ABC`, `789XYZ`)
+- This format provides ~17.5 million unique combinations
+- Easy to read, communicate, and remember
 
 ### Example Response
 
 ```json
 {
-  "id": "game_abc123",
+  "id": "755XRK",
   "status": "in_progress",
-  "turnsLeft": 5,
-  "word": ["H", "_", "N", "G", "M", "_", "N"],
-  "usedLetters": ["H", "N", "G", "M"],
-  "difficulty": "medium",
-  "score": 120
+  "remaining": 8,
+  "word": "_______",
+  "guesses": ["A", "E"],
+  "score": 0
 }
 ```
 
@@ -78,5 +96,19 @@ The API will be available at `http://localhost:8080` by default.
 ### Running Tests
 
 ```bash
-go test ./tests/... -v
+go test ./... -v
+```
+
+### API Testing
+
+You can use Postman or any other API testing tool to interact with the endpoints.
+For example, to create a new game:
+
+```
+POST http://localhost:8080/api/games
+Content-Type: application/json
+
+{
+  "player_name": "Player1"
+}
 ```
