@@ -11,10 +11,15 @@ import (
 // Structures pour les requêtes
 type CreateGameRequest struct {
 	PlayerName string `json:"player_name" binding:"required,min=3,max=50"`
+	Difficulty string `json:"difficulty"` // "easy", "medium", "hard"
 }
 
 type GuessRequest struct {
 	Letter string `json:"letter" binding:"required,len=1"`
+}
+
+type GetHintRequest struct {
+	GameID string `json:"game_id" binding:"required"`
 }
 
 // CreateGame crée une nouvelle partie
@@ -25,14 +30,20 @@ func CreateGame(c *gin.Context) {
 		return
 	}
 
-	// Créer une nouvelle partie
-	newGame := game.NewGame()
+	// Créer une nouvelle partie avec la difficulté spécifiée
+	var newGame *game.Game
+	if req.Difficulty != "" {
+		newGame = game.NewGameWithDifficulty(req.Difficulty)
+	} else {
+		newGame = game.NewGame() // Utilise la difficulté par défaut (medium)
+	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"id":        newGame.ID,
-		"word":      newGame.GetMaskedWord(),
-		"remaining": newGame.Remaining,
-		"status":    newGame.Status,
+		"id":         newGame.ID,
+		"word":       newGame.GetMaskedWord(),
+		"remaining":  newGame.Remaining,
+		"status":     newGame.Status,
+		"difficulty": newGame.Difficulty,
 	})
 }
 
@@ -47,12 +58,14 @@ func GetGame(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"id":        gameInstance.ID,
-		"word":      gameInstance.GetMaskedWord(),
-		"guesses":   gameInstance.Guesses,
-		"remaining": gameInstance.Remaining,
-		"status":    gameInstance.Status,
-		"score":     gameInstance.Score,
+		"id":         gameInstance.ID,
+		"word":       gameInstance.GetMaskedWord(),
+		"guesses":    gameInstance.Guesses,
+		"remaining":  gameInstance.Remaining,
+		"status":     gameInstance.Status,
+		"score":      gameInstance.Score,
+		"difficulty": gameInstance.Difficulty,
+		"hint":       gameInstance.Hint,
 	})
 }
 
@@ -80,12 +93,14 @@ func SubmitGuess(c *gin.Context) {
 	success := gameInstance.MakeGuess(req.Letter)
 
 	c.JSON(http.StatusOK, gin.H{
-		"success":   success,
-		"word":      gameInstance.GetMaskedWord(),
-		"guesses":   gameInstance.Guesses,
-		"remaining": gameInstance.Remaining,
-		"status":    gameInstance.Status,
-		"score":     gameInstance.Score,
+		"success":    success,
+		"word":       gameInstance.GetMaskedWord(),
+		"guesses":    gameInstance.Guesses,
+		"remaining":  gameInstance.Remaining,
+		"status":     gameInstance.Status,
+		"score":      gameInstance.Score,
+		"difficulty": gameInstance.Difficulty,
+		"hint":       gameInstance.Hint,
 	})
 }
 
@@ -103,8 +118,33 @@ func AbandonGame(c *gin.Context) {
 
 // GetLeaderboard récupère le classement
 func GetLeaderboard(c *gin.Context) {
-	leaderboard := game.GetLeaderboard(10) // Limiter à 10 entrées
+	// Récupère le paramètre de difficulté s'il existe
+	difficulty := c.Query("difficulty")
+
+	// Récupère le classement filtré par difficulté si spécifié
+	var leaderboard []game.LeaderboardEntry
+	if difficulty != "" {
+		leaderboard = game.GetLeaderboardByDifficulty(difficulty, 10)
+	} else {
+		leaderboard = game.GetLeaderboard(10) // Limiter à 10 entrées
+	}
+
 	c.JSON(http.StatusOK, leaderboard)
+}
+
+// GetHint récupère l'indice pour une partie
+func GetHint(c *gin.Context) {
+	id := c.Param("id")
+
+	gameInstance, exists := game.GetGame(id)
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Game not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"hint": gameInstance.GetHintForGame(),
+	})
 }
 
 // SubmitScore soumet un score au classement
@@ -138,6 +178,7 @@ func SubmitScore(c *gin.Context) {
 		gameInstance.Score,
 		len(gameInstance.Word),
 		gameInstance.Remaining,
+		gameInstance.Difficulty,
 	)
 
 	c.Status(http.StatusCreated)
