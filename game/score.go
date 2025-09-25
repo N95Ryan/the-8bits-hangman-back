@@ -12,6 +12,7 @@ type LeaderboardEntry struct {
 	Score             int    `json:"score"`
 	WordLength        int    `json:"word_length"`
 	RemainingAttempts int    `json:"remaining_attempts"`
+	Difficulty        string `json:"difficulty"`
 }
 
 // Stockage en mémoire des scores
@@ -50,13 +51,14 @@ func CalculateBonusScore(remainingAttempts int) int {
 }
 
 // AddToLeaderboard ajoute un score au classement
-func AddToLeaderboard(playerID string, playerName string, score int, wordLength int, remainingAttempts int) {
+func AddToLeaderboard(playerID string, playerName string, score int, wordLength int, remainingAttempts int, difficulty string) {
 	entry := LeaderboardEntry{
 		PlayerID:          playerID,
 		PlayerName:        playerName,
 		Score:             score,
 		WordLength:        wordLength,
 		RemainingAttempts: remainingAttempts,
+		Difficulty:        difficulty,
 	}
 
 	leaderboardMutex.Lock()
@@ -82,4 +84,27 @@ func GetLeaderboard(limit int) []LeaderboardEntry {
 	}
 
 	return result
+}
+
+// GetLeaderboardByDifficulty retourne le classement filtré par niveau de difficulté
+func GetLeaderboardByDifficulty(difficulty string, limit int) []LeaderboardEntry {
+	leaderboardMutex.RLock()
+	defer leaderboardMutex.RUnlock()
+
+	// Filtrer par difficulté
+	var filteredLeaderboard []LeaderboardEntry
+	for _, entry := range leaderboard {
+		if entry.Difficulty == difficulty {
+			filteredLeaderboard = append(filteredLeaderboard, entry)
+		}
+	}
+
+	// Trier par score (à implémenter avec sort.Slice si nécessaire)
+
+	// Limiter le nombre de résultats
+	if limit > 0 && limit < len(filteredLeaderboard) {
+		return filteredLeaderboard[:limit]
+	}
+
+	return filteredLeaderboard
 }

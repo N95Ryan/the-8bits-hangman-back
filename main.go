@@ -21,6 +21,7 @@ func main() {
 	r.POST("/api/games", handlers.CreateGame)
 	r.GET("/api/games/:id", handlers.GetGame)
 	r.POST("/api/games/:id/guess", handlers.SubmitGuess)
+	r.GET("/api/games/:id/hint", handlers.GetHint)
 	r.DELETE("/api/games/:id", handlers.AbandonGame)
 
 	// Routes pour les utilisateurs

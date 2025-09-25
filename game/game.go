@@ -9,12 +9,14 @@ import (
 
 // Game représente l'état d'une partie de pendu
 type Game struct {
-	ID        string   `json:"id"`
-	Word      string   `json:"word"`
-	Guesses   []string `json:"guesses"`
-	Remaining int      `json:"remaining"`
-	Status    string   `json:"status"` // "in_progress", "won", "lost"
-	Score     int      `json:"score"`
+	ID         string   `json:"id"`
+	Word       string   `json:"word"`
+	Guesses    []string `json:"guesses"`
+	Remaining  int      `json:"remaining"`
+	Status     string   `json:"status"` // "in_progress", "won", "lost"
+	Score      int      `json:"score"`
+	Difficulty string   `json:"difficulty"`
+	Hint       string   `json:"hint"`
 }
 
 // Stockage en mémoire des parties
@@ -25,14 +27,21 @@ var (
 
 // NewGame crée une nouvelle partie avec un mot aléatoire
 func NewGame() *Game {
-	word := GetRandomWord()
+	return NewGameWithDifficulty("medium")
+}
+
+// NewGameWithDifficulty crée une nouvelle partie avec un niveau de difficulté spécifié
+func NewGameWithDifficulty(difficulty string) *Game {
+	wordSelection := GetRandomWordByDifficulty(difficulty)
 	game := &Game{
-		ID:        utils.GenerateID(),
-		Word:      strings.ToUpper(word),
-		Guesses:   []string{},
-		Remaining: 5,
-		Status:    "in_progress",
-		Score:     0,
+		ID:         utils.GenerateID(),
+		Word:       wordSelection.Word,
+		Guesses:    []string{},
+		Remaining:  getDifficultyAttempts(difficulty),
+		Status:     "in_progress",
+		Score:      0,
+		Difficulty: difficulty,
+		Hint:       wordSelection.Hint,
 	}
 
 	// Stocker la partie en mémoire
@@ -130,4 +139,24 @@ func sanitizeLetter(letter string) string {
 		return ""
 	}
 	return strings.ToUpper(string(letter[0]))
+}
+
+// getDifficultyAttempts retourne le nombre de tentatives selon la difficulté
+func getDifficultyAttempts(difficulty string) int {
+	switch difficulty {
+	case "easy":
+		return 8
+	case "hard":
+		return 5
+	default: // medium ou autre
+		return 6
+	}
+}
+
+// GetHintForGame retourne l'indice pour une partie spécifique
+func (g *Game) GetHintForGame() string {
+	if g.Hint == "" {
+		return "No hint available"
+	}
+	return g.Hint
 }
