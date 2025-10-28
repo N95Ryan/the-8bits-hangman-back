@@ -42,6 +42,7 @@ var wordCategories = map[string][]WordWithHint{
 		{Word: "CONSOLE", Hint: "Device dedicated to gaming"},
 		{Word: "CONTROLLER", Hint: "Gaming input device"},
 		{Word: "JOYSTICK", Hint: "Directional control lever"},
+		{Word: "PIKACHU", Hint: "Electric mouse"},
 		{Word: "DONKEY", Hint: "Famous gorilla in video games"},
 		{Word: "SPRITE", Hint: "2D image integrated in a scene"},
 		{Word: "MEGAMAN", Hint: "Blue robot fighting other robots"},
